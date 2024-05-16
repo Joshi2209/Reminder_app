@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reminder App</title>
+    <style>
+      body {
+        font-family: "arial", sans-serif;
+        background-color: #eaeaea;
+      }
+      .container {
+        max-width: 500px;
+        margin: auto;
+        background-color: #ffff;
+        padding: 1px 20px 20px 20x;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border: 1px solid black;
+        margin-top: 10%;
+      }
+      label,
+      input,
+      button {
+        margin: 10px 0;
+        box-sizing: border-box;
+        padding: 10px;
+      }
+      input {
+        width: 100%;
+        margin-top: 5px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        padding: 5px;
+        border: 1px solid black;
+      }
+      th {
+        background-color: wheat;
+        color: rgb(19, 18, 18);
+      }
+      button {
+        background-color: wheat;
+        color: black;
+        width: 100%;
+      }
+      button:hover {
+        color: black;
+        background-color: rgb(241, 240, 236);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2 style="text-align: center">Reminder App</h2>
+
+      <label for="">title</label>
+      <input type="text" id="title" />
+      <label for="">Description</label>
+      <input type="text" id="description" />
+      <label for="">Date</label>
+      <input type="date" id="date" />
+      <label for="">Time</label>
+      <input type="time" id="time" />
+
+      <button onclick="scheduleReminder()">Shedule Reminder</button>
+
+      <table border="1">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Date and Time</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="reminderTableBody"></tbody>
+      </table>
+    </div>
+    <audio src="media/oneplus7.mp3" id="notificationSound"></audio>
+
+    <script>
+      if ("notification" in window) {
+        Notification.requestPermission().then(function (premission) {
+          if (Notification.permission !== "granted") {
+            alert("Plese allow notification acess!!!");
+            Location.reload();
+          }
+        });
+      }
+      var timeoutIDs = [];
+
+      function scheduleReminder() {
+        var title = document.getElementById("title").value;
+        var description = document.getElementById("description").value;
+        var date = document.getElementById("date").value;
+        var time = document.getElementById("time").value;
+        console.log("click");
+
+        var dateTimeString = date + " " + time;
+        var scheduledTime = new Date(dateTimeString);
+        var currentTime = new Date();
+        var timeDifference = scheduledTime - currentTime;
+
+        if (timeDifference > 0) {
+          addReminder(title, description, dateTimeString);
+
+          var timeoutid = setTimeout(function () {
+            document.getElementById("notificationSound").play();
+
+            var notification = new Notification(title, {
+              body: description,
+              requireInteraction: true,
+            });
+          }, timeDifference);
+
+          timeoutIDs.push(timeoutid);
+        } else {
+          alert("the shedule time is in the past");
+        }
+      }
+      function addReminder(title, description, dateTimeString) {
+        var tablebody = document.getElementById("reminderTableBody");
+
+        var row = reminderTableBody.insertRow();
+
+        var titleCell = row.insertCell(0);
+        var descriptionCell = row.insertCell(1);
+        var dateTimeCell = row.insertCell(2);
+        var ActionCell = row.insertCell(3);
+
+        titleCell.innerHTML = title;
+        descriptionCell.innerHTML = description;
+        dateTimeCell.innerHTML = dateTimeString;
+        ActionCell.innerHTML =
+          '<button onclick = "deleteReminder(this);"> Delete </button>';
+      }
+      function deleteReminder(button) {
+        var row = button.closest("tr");
+        var index = row.rowIndex;
+
+        clearTimeout(timeoutIDs[index - 1]);
+        timeoutIDs.splice(index - 1, 1);
+
+        row.remove();
+      }
+    </script>
+  </body>
+</html>
